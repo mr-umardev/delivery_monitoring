@@ -35,19 +35,18 @@ pipeline {
 
         stage('Run Prometheus') {
             steps {
-                powershell """
-                Write-Host 'Stopping old Prometheus container if it exists...'
-                docker rm -f prometheus 2>$null
-
-                Write-Host 'Starting Prometheus with correct file mounts...'
-
-                docker run -d `
-                    --name prometheus `
-                    -p 9090:9090 `
-                    -v "$env:WORKSPACE/prometheus.yml:/etc/prometheus/prometheus.yml" `
-                    -v "$env:WORKSPACE/alert_rules.yml:/etc/prometheus/alert_rules.yml" `
-                    prom/prometheus
-                """
+                script {
+                    def p = pwd().replace('\\','/')
+                    powershell """
+                    docker rm -f prometheus 2>$null
+                    docker run -d `
+                        --name prometheus `
+                        -p 9090:9090 `
+                        -v "${p}/prometheus.yml:/etc/prometheus/prometheus.yml" `
+                        -v "${p}/alert_rules.yml:/etc/prometheus/alert_rules.yml" `
+                        prom/prometheus
+                    """
+                }
             }
         }
 
